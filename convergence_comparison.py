@@ -30,7 +30,7 @@ def gradient_descent_fast(iterations):
     for i in range(iterations):
         # 快速指数衰减
         loss_value = initial_loss * np.exp(-0.1 * i) + np.random.normal(0, 0.5)
-        loss.append(max(loss_value, 0.01))  # 确保损失不为负
+        loss.append(max(loss_value, 0.01))  # 确保损失为正值，因为对数刻度无法显示负值或零
     
     return np.array(loss)
 
@@ -89,13 +89,14 @@ def adam_optimizer(iterations):
     return np.array(loss)
 
 
-def plot_convergence_curves(iterations=100):
+def plot_convergence_curves(iterations=100, convergence_threshold=0.1):
     """
     绘制收敛曲线对比图
     Plot convergence curve comparison
     
     Args:
         iterations: 迭代次数 / Number of iterations
+        convergence_threshold: 收敛阈值（相对于初始损失的比例）/ Convergence threshold (ratio to initial loss)
     """
     # 生成数据
     x = np.arange(iterations)
@@ -126,7 +127,7 @@ def plot_convergence_curves(iterations=100):
               fontsize=14, fontweight='bold')
     plt.legend(loc='upper right', fontsize=10)
     plt.grid(True, alpha=0.3, linestyle='--')
-    plt.yscale('log')  # 使用对数刻度更好地展示收敛过程
+    plt.yscale('log')  # 使用对数刻度展示跨越多个数量级的损失值，更清晰地显示收敛趋势
     
     # 保存图表
     plt.tight_layout()
@@ -149,8 +150,8 @@ def plot_convergence_curves(iterations=100):
     }
     
     for name, loss_values in algorithms.items():
-        # 计算收敛到初始损失10%所需的迭代次数
-        threshold = loss_values[0] * 0.1
+        # 计算收敛到初始损失指定阈值所需的迭代次数
+        threshold = loss_values[0] * convergence_threshold
         converged_at = np.where(loss_values < threshold)[0]
         if len(converged_at) > 0:
             iterations_to_converge = converged_at[0]
@@ -160,7 +161,7 @@ def plot_convergence_curves(iterations=100):
         final_loss = loss_values[-1]
         print(f"\n{name}:")
         print(f"  - 最终损失值: {final_loss:.4f}")
-        print(f"  - 收敛到10%阈值所需迭代数: {iterations_to_converge}")
+        print(f"  - 收敛到{convergence_threshold*100:.0f}%阈值所需迭代数: {iterations_to_converge}")
         print(f"  - 平均收敛速度: {(loss_values[0] - final_loss) / iterations:.4f}/迭代")
 
 
